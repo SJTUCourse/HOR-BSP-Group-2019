@@ -13,12 +13,13 @@ if filetype == 'csv'
 end
 
 if filetype == 'txt'
-    data = dlmread(filename,'\n');% default separator for .txt file is '\n'
+    data = dlmread(filename,'\t');
     flag = 1;
+    
 end
 
 if filetype == 'mat'
-    data = load(filename,'data');
+    load(filename,'data');
     flag = 1;
 end
 
