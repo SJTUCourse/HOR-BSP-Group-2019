@@ -17,20 +17,30 @@
 % I/O Connections Overview:
 %    Please refer to your hardware reference manual.
 
-function StaticAO()
+function StaticAO(hObject,handles)
 
 % Make Automation.BDaq assembly visible to MATLAB.
 BDaq = NET.addAssembly('Automation.BDaq');
 
 % Define how many data to makeup a waveform period.
-oneWavePointCount = int32(512);
+% oneWavePointCount = int32(512);
 
 % Configure the following three parameters before running the demo.
 % The default device of project is demo device, users can set other devices 
 % according to their needs. 
 deviceDescription = 'USB-4704,BID#0';
+
+global t;
 channelStart = int32(0);
 channelCount = int32(1);
+ppp=handles.ppp;
+f=handles.frequency;
+period=1/(f*ppp);
+scaledWaveForm=handles.dataAO;
+
+periodcount=0;
+handles.periodcount=periodcount;
+guidata(hObject,handles);
 
 % Declare the type of signal. If you want to specify the type of output 
 % signal, please change 'style' parameter in the GenerateWaveform function.
@@ -71,16 +81,17 @@ try
     scaleData = NET.createArray('System.Double', int32(64));
     
     t = timer('TimerFcn',{@TimerCallback, instantAoCtrl, ...
-        oneWavePointCount, scaleData, scaledWaveForm, channelStart, ...
-        channelCount}, 'period', 0.01, 'executionmode', 'fixedrate', ...
+        ppp, scaleData, scaledWaveForm, channelStart, ...
+        channelCount,hObject}, 'period',period, 'executionmode', 'fixedrate', ...
         'StartDelay', 1);
     start(t);
-    input('Outputting data...Press Enter key to quit!', 's');
-    if isvalid(t)
-    disp('StaticAO is completed compulsorily!');    
-    stop(t);
-    delete(t); 
-    end
+    uiwait(handles.figure1);
+%     input('Outputting data...Press Enter key to quit!', 's');
+%     if isvalid(t)
+%     disp('StaticAO is completed compulsorily!');    
+%     stop(t);
+%     delete(t); 
+%     end
 catch e
     % Something is wrong. 
     if BioFailed(errorCode)    
@@ -106,19 +117,18 @@ result =  errorCode < Automation.BDaq.ErrorCode.Success && ...
 end
 
 function TimerCallback(obj, event, instantAoCtrl, oneWavePointCount, ...
-    scaleData, scaledWaveForm, channelStart, channelCount)
+    scaleData, scaledWaveForm, channelStart, channelCount, hObject)
+handles = guidata(hObject);
 
-persistent i ;
-
-if isempty(i)
-    i = 0;
-else
-    i = i + 1;
-end
+contiflag=handles.contiflag;
+periodNum=handles.periodNum;
+i=handles.i;
+i = i + 1;
+handles.i=i;
 j = 0;
-if i <= (oneWavePointCount - 1)
+if i <=oneWavePointCount
     if j <= (channelCount - 1)
-        scaleData.Set(j, scaledWaveForm.Get(channelCount * i + j));
+        scaleData.Set(j, scaledWaveForm(i));
         errorCode = instantAoCtrl.Write(channelStart,...
             channelCount, scaleData);
         if BioFailed(errorCode)
@@ -127,34 +137,23 @@ if i <= (oneWavePointCount - 1)
             throw (e);
         end
     end
-else
-    clear i; % constant output mode
-    % one-shot output mode
-    %     clear functions;
-    %     stop(obj);
-    %     delete(obj);
-    
-    fprintf('\nStaticAO is completed, and press Enter key to quit!');
+else if contiflag==1
+    i=0; % constant output mode
+    handles.i=i;
+    else
+    periodcount=handles.periodcount;
+    periodcount=periodcount+1;% x-shot output mode
+    handles.periodcount=periodcount;
+    if periodcount<=periodNum
+        i=0;
+        handles.i=i;
+    else
+%         clear functions;
+        stop(obj);
+        delete(obj);
+%        fprintf('\nStaticAO is completed, and press Enter key to quit!');
+    end
+    end
 end
-
+guidata(hObject,handles);
 end
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -22,7 +22,7 @@ function varargout = SignalGenerator_Project2(varargin)
 
 % Edit the above text to modify the response to help SignalGenerator_Project2
 
-% Last Modified by GUIDE v2.5 21-Nov-2019 13:25:08
+% Last Modified by GUIDE v2.5 21-Nov-2019 17:23:39
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,16 +55,19 @@ function SignalGenerator_Project2_OpeningFcn(hObject, eventdata, handles, vararg
 % Choose default command line output for SignalGenerator_Project2
 handles.output = hObject;
 
-ppp=512;
+amplitude=5;
+handles.amplitude=amplitude;
+
+ppp=100;
 handles.ppp=ppp;
 
-offset=0;
+offset=2.5;
 handles.offset=offset;
 
 dutycycle=0.5;
 handles.dutycycle=dutycycle;
 
-frequency=10;
+frequency=1;
 handles.frequency=frequency;
 
 wavechosen=1;
@@ -74,14 +77,23 @@ dataAO=zeros(512,1);
 handles.dataAO=dataAO;
 guidata(hObject,handles);
 
-set(handles.listbox1,'value',1);
+contiflag=1;
+handles.contiflag=contiflag;
+
+periodNum=2;
+handles.periodNum=periodNum;
+
+i=0;
+handles.i=i;
+
+periodcount=0;
+handles.periodcount=periodcount;
 
 set(handles.listbox1,'value',1);
+
 set(handles.text_dutycycle,'visible','off');
 set(handles.edit_dutycycle,'visible','off');
 set(handles.text9,'visible','off');
-set(handles.text5,'visible','off');
-set(handles.edit_PeriodNum,'visible','off');
 set(handles.radiobutton_continuous,'value',1);
 set(handles.radiobutton_specified,'value',0);
 
@@ -110,7 +122,7 @@ function listbox1_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 wavechosen=get(handles.listbox1,'value');
 handles.wavechosen=wavechosen;
-guidata(hObject,handles);
+
 set(handles.edit_ppp,'enable','on');
 set(handles.edit_amplitude,'enable','on');
 set(handles.edit_frequency,'enable','on');
@@ -147,24 +159,29 @@ offset=handles.offset;
 dutycycle=handles.dutycycle;
 ppp=handles.ppp;
 style=handles.wavechosen;
+frequency=handles.frequency;
 dataAO=GenerateWaveform(amplitude, offset, dutycycle, ppp, style);
 totallength=2*ppp;
-AxesHandle = handles.axes1;
-AxesHandle.XLim = [0 totallength];
-AxesHandle.XTick = [0 round(ppp/2) ppp totallength];
-    AxesHandle.XTickLabel = {'0',...
-        [num2str(round(ppp/2)/(f*2)),' s'],...
-        [num2str(ppp/f),' s'],...
-        [num2str(totallength*2/f),' s']};
 data_to_plot = zeros(2*ppp,1);
 data_to_plot(1:ppp,1) = dataAO;
-data_to_plot(ppp+1:2*ppp,1) = dataAO;    
-plot(AxesHandle,data_to_plot,'black');
+data_to_plot(ppp+1:2*ppp,1) = dataAO;  
+handles.dataAO=dataAO;
+axes(handles.axes1);
+plot(data_to_plot,'black');
+set(handles.axes1,'XLim',[0,totallength]);
+xticks(handles.axes1,[0 totallength/8 totallength/4 totallength*3/8 totallength/2 totallength*5/8 totallength*3/4 totallength*7/8 totallength]);
+xticklabels(handles.axes1,{'0',...
+    [num2str(roundn(1/(frequency*4),-2)),' s'],...
+    [num2str(roundn(1/(frequency*2),-2)),' s'],...
+    [num2str(roundn(3/(frequency*4),-2)),' s'],...
+    [num2str(roundn(1/frequency,-2)),' s'],...
+    [num2str(roundn(5/(frequency*4),-2)),' s'],...
+    [num2str(roundn(2/(frequency*3),-2)),' s'],...
+    [num2str(roundn(7/(frequency*4),-2)),' s'],...
+    [num2str(roundn(2/frequency,-2)),' s']});
+guidata(hObject,handles);
 
-% Hints: get(hObject,'String') returns contents of edit_amplitude as text
-%        str2double(get(hObject,'String')) returns contents of edit_amplitude as a double
- AxesHandle = handles.axes1;
-plot(AxesHandle,data_to_plot,'black');
+
 % Hints: contents = cellstr(get(hObject,'String')) returns listbox1 contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from listbox1
 
@@ -188,6 +205,34 @@ function edit_frequency_Callback(hObject, eventdata, handles)
 frequency=str2double(get(handles.edit_frequency,'String'));
 handles.frequency=frequency;
 guidata(hObject,handles);
+
+%在画面上对信号进行两个周期的预览
+amplitude=handles.amplitude;
+offset=handles.offset;
+dutycycle=handles.dutycycle;
+ppp=handles.ppp;
+style=handles.wavechosen;
+dataAO=GenerateWaveform(amplitude, offset, dutycycle, ppp, style);
+totallength=2*ppp;
+data_to_plot = zeros(2*ppp,1);
+data_to_plot(1:ppp,1) = dataAO;
+data_to_plot(ppp+1:2*ppp,1) = dataAO;  
+handles.dataAO=dataAO;
+axes(handles.axes1);
+plot(data_to_plot,'black');
+set(handles.axes1,'XLim',[0,totallength]);
+xticks(handles.axes1,[0 totallength/8 totallength/4 totallength*3/8 totallength/2 totallength*5/8 totallength*3/4 totallength*7/8 totallength]);
+xticklabels(handles.axes1,{'0',...
+    [num2str(roundn(1/(frequency*4),-2)),' s'],...
+    [num2str(roundn(1/(frequency*2),-2)),' s'],...
+    [num2str(roundn(3/(frequency*4),-2)),' s'],...
+    [num2str(roundn(1/frequency,-2)),' s'],...
+    [num2str(roundn(5/(frequency*4),-2)),' s'],...
+    [num2str(roundn(2/(frequency*3),-2)),' s'],...
+    [num2str(roundn(7/(frequency*4),-2)),' s'],...
+    [num2str(roundn(2/frequency,-2)),' s']});
+guidata(hObject,handles);
+
 % Hints: get(hObject,'String') returns contents of edit_frequency as text
 %        str2double(get(hObject,'String')) returns contents of edit_frequency as a double
 
@@ -219,25 +264,28 @@ offset=handles.offset;
 dutycycle=handles.dutycycle;
 ppp=handles.ppp;
 style=handles.wavechosen;
-f=handles.frequency;
+frequency=handles.frequency;
 dataAO=GenerateWaveform(amplitude, offset, dutycycle, ppp, style);
 totallength=2*ppp;
-AxesHandle = handles.axes1;
-AxesHandle.XLim = [0 totallength];
-    AxesHandle.XTick = [0 round(ppp/2) ppp totallength];
-    AxesHandle.XTickLabel = {'0',...
-        [num2str(round(ppp/2)/(f*2)),' s'],...
-        [num2str(ppp/f),' s'],...
-        [num2str(totallength*2/f),' s']};
 data_to_plot = zeros(2*ppp,1);
 data_to_plot(1:ppp,1) = dataAO;
-data_to_plot(ppp+1:2*ppp,1) = dataAO;    
-plot(AxesHandle,data_to_plot,'black');
+data_to_plot(ppp+1:2*ppp,1) = dataAO;  
+handles.dataAO=dataAO;
+axes(handles.axes1);
+plot(data_to_plot,'black');
+set(handles.axes1,'XLim',[0,totallength]);
+xticks(handles.axes1,[0 totallength/8 totallength/4 totallength*3/8 totallength/2 totallength*5/8 totallength*3/4 totallength*7/8 totallength]);
+xticklabels(handles.axes1,{'0',...
+    [num2str(roundn(1/(frequency*4),-2)),' s'],...
+    [num2str(roundn(1/(frequency*2),-2)),' s'],...
+    [num2str(roundn(3/(frequency*4),-2)),' s'],...
+    [num2str(roundn(1/frequency,-2)),' s'],...
+    [num2str(roundn(5/(frequency*4),-2)),' s'],...
+    [num2str(roundn(2/(frequency*3),-2)),' s'],...
+    [num2str(roundn(7/(frequency*4),-2)),' s'],...
+    [num2str(roundn(2/frequency,-2)),' s']});
+guidata(hObject,handles);
 
-% Hints: get(hObject,'String') returns contents of edit_amplitude as text
-%        str2double(get(hObject,'String')) returns contents of edit_amplitude as a double
- AxesHandle = handles.axes1;
- plot(AxesHandle,data_to_plot,'black');
 
 % --- Executes during object creation, after setting all properties.
 function edit_amplitude_CreateFcn(hObject, eventdata, handles)
@@ -252,7 +300,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
 function edit_ppp_Callback(hObject, eventdata, handles)
 % hObject    handle to edit_ppp (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -265,24 +312,28 @@ amplitude=handles.amplitude;
 offset=handles.offset;
 dutycycle=handles.dutycycle;
 style=handles.wavechosen;
+frequency=handles.frequency;
 dataAO=GenerateWaveform(amplitude, offset, dutycycle, ppp, style);
 totallength=2*ppp;
-AxesHandle = handles.axes1;
-AxesHandle.XLim = [0 totallength];
-AxesHandle.XTick = [0 round(ppp/2) ppp totallength];
-    AxesHandle.XTickLabel = {'0',...
-        [num2str(round(ppp/2)/(f*2)),' s'],...
-        [num2str(ppp/f),' s'],...
-        [num2str(totallength*2/f),' s']};
 data_to_plot = zeros(2*ppp,1);
 data_to_plot(1:ppp,1) = dataAO;
-data_to_plot(ppp+1:2*ppp,1) = dataAO;    
-plot(AxesHandle,data_to_plot,'black');
+data_to_plot(ppp+1:2*ppp,1) = dataAO;  
+handles.dataAO=dataAO;
+axes(handles.axes1);
+plot(data_to_plot,'black');
+set(handles.axes1,'XLim',[0,totallength]);
+xticks(handles.axes1,[0 totallength/8 totallength/4 totallength*3/8 totallength/2 totallength*5/8 totallength*3/4 totallength*7/8 totallength]);
+xticklabels(handles.axes1,{'0',...
+    [num2str(roundn(1/(frequency*4),-2)),' s'],...
+    [num2str(roundn(1/(frequency*2),-2)),' s'],...
+    [num2str(roundn(3/(frequency*4),-2)),' s'],...
+    [num2str(roundn(1/frequency,-2)),' s'],...
+    [num2str(roundn(5/(frequency*4),-2)),' s'],...
+    [num2str(roundn(2/(frequency*3),-2)),' s'],...
+    [num2str(roundn(7/(frequency*4),-2)),' s'],...
+    [num2str(roundn(2/frequency,-2)),' s']});
+guidata(hObject,handles);
 
-% Hints: get(hObject,'String') returns contents of edit_amplitude as text
-%        str2double(get(hObject,'String')) returns contents of edit_amplitude as a double
-AxesHandle = handles.axes1;
-plot(AxesHandle,data_to_plot,'black');
 % Hints: get(hObject,'String') returns contents of edit_ppp as text
 %        str2double(get(hObject,'String')) returns contents of edit_ppp as a double
 
@@ -369,6 +420,7 @@ if ischar(filename)
     
     AxesHandle = handles.axes1;
     AxesHandle.XLim = [0 totallength];
+    AxesHandle.YLim = [0 inf];
     AxesHandle.XTick = [0 round(dataNum/2) dataNum totallength];
     AxesHandle.XTickLabel = {'0',...
         [num2str(round(dataNum/2)),' ms'],...
@@ -403,29 +455,40 @@ function pushbutton_draw_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_draw (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+[figure2,handles] = UserDefinedFcn(handles);
 
+guidata(hObject,handles)
+
+if any(dataAO) %any: if any element in dataAO is nonzero, return 1.
+    
+end
 
 % --- Executes on button press in pushbutton_run.
 function pushbutton_run_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_run (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+StaticAO(handles.figure1,handles);
 
 % --- Executes on button press in pushbutton_pause.
 function pushbutton_pause_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_pause (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+global t;
+stop(t);
 
 % --- Executes on button press in pushbutton_stop.
 function pushbutton_stop_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_stop (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-uiresume(handles.figure1);
+global t;
+stop(t);
+delete(t);
+clear global t;
 
+uiresume(handles.figure1);
 
 function edit_offset_Callback(hObject, eventdata, handles)
 % hObject    handle to edit_offset (see GCBO)
@@ -439,27 +502,30 @@ amplitude=handles.amplitude;
 dutycycle=handles.dutycycle;
 ppp=handles.ppp;
 style=handles.wavechosen;
+frequency=handles.frequency;
 dataAO=GenerateWaveform(amplitude, offset, dutycycle, ppp, style);
 totallength=2*ppp;
-AxesHandle = handles.axes1;
-AxesHandle.XLim = [0 totallength];
-    AxesHandle.XTick = [0 round(ppp/2) ppp totallength];
-    AxesHandle.XTickLabel = {'0',...
-        [num2str(round(ppp/2)/(f*2)),' s'],...
-        [num2str(ppp/f),' s'],...
-        [num2str(totallength*2/f),' s']};
 data_to_plot = zeros(2*ppp,1);
 data_to_plot(1:ppp,1) = dataAO;
-data_to_plot(ppp+1:2*ppp,1) = dataAO;    
-plot(AxesHandle,data_to_plot,'black');
+data_to_plot(ppp+1:2*ppp,1) = dataAO;  
+handles.dataAO=dataAO;
+axes(handles.axes1);
+plot(data_to_plot,'black');
+set(handles.axes1,'XLim',[0,totallength]);
+xticks(handles.axes1,[0 totallength/8 totallength/4 totallength*3/8 totallength/2 totallength*5/8 totallength*3/4 totallength*7/8 totallength]);
+xticklabels(handles.axes1,{'0',...
+    [num2str(roundn(1/(frequency*4),-2)),' s'],...
+    [num2str(roundn(1/(frequency*2),-2)),' s'],...
+    [num2str(roundn(3/(frequency*4),-2)),' s'],...
+    [num2str(roundn(1/frequency,-2)),' s'],...
+    [num2str(roundn(5/(frequency*4),-2)),' s'],...
+    [num2str(roundn(2/(frequency*3),-2)),' s'],...
+    [num2str(roundn(7/(frequency*4),-2)),' s'],...
+    [num2str(roundn(2/frequency,-2)),' s']});
+guidata(hObject,handles);
 
-% Hints: get(hObject,'String') returns contents of edit_amplitude as text
-%        str2double(get(hObject,'String')) returns contents of edit_amplitude as a double
-AxesHandle = handles.axes1;
-plot(AxesHandle,data_to_plot,'black');
 % Hints: get(hObject,'String') returns contents of edit_offset as text
 %        str2double(get(hObject,'String')) returns contents of edit_offset as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function edit_offset_CreateFcn(hObject, eventdata, handles)
@@ -483,7 +549,6 @@ guidata(hObject,handles);
 % Hints: get(hObject,'String') returns contents of edit_PeriodNum as text
 %        str2double(get(hObject,'String')) returns contents of edit_PeriodNum as a double
 
-
 % --- Executes during object creation, after setting all properties.
 function edit_PeriodNum_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to edit_PeriodNum (see GCBO)
@@ -496,8 +561,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
 function edit_dutycycle_Callback(hObject, eventdata, handles)
 % hObject    handle to edit_dutycycle (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -506,32 +569,34 @@ dutycycle=str2double(get(handles.edit_dutycycle,'String'));
 handles.dutycycle=dutycycle;
 guidata(hObject,handles);
 
-
 amplitude=handles.amplitude;
 offset=handles.offset;
 ppp=handles.ppp;
 style=handles.wavechosen;
+frequency=handles.frequency;
 dataAO=GenerateWaveform(amplitude, offset, dutycycle, ppp, style);
 totallength=2*ppp;
-AxesHandle = handles.axes1;
-AxesHandle.XLim = [0 totallength];
-    AxesHandle.XTick = [0 round(ppp/2) ppp totallength];
-    AxesHandle.XTickLabel = {'0',...
-        [num2str(round(ppp/2)/(f*2)),' s'],...
-        [num2str(ppp/f),' s'],...
-        [num2str(totallength*2/f),' s']};
 data_to_plot = zeros(2*ppp,1);
 data_to_plot(1:ppp,1) = dataAO;
-data_to_plot(ppp+1:2*ppp,1) = dataAO;    
-plot(AxesHandle,data_to_plot,'black');
+data_to_plot(ppp+1:2*ppp,1) = dataAO;  
+handles.dataAO=dataAO;
+axes(handles.axes1);
+plot(data_to_plot,'black');
+set(handles.axes1,'XLim',[0,totallength]);
+xticks(handles.axes1,[0 totallength/8 totallength/4 totallength*3/8 totallength/2 totallength*5/8 totallength*3/4 totallength*7/8 totallength]);
+xticklabels(handles.axes1,{'0',...
+    [num2str(roundn(1/(frequency*4),-2)),' s'],...
+    [num2str(roundn(1/(frequency*2),-2)),' s'],...
+    [num2str(roundn(3/(frequency*4),-2)),' s'],...
+    [num2str(roundn(1/frequency,-2)),' s'],...
+    [num2str(roundn(5/(frequency*4),-2)),' s'],...
+    [num2str(roundn(2/(frequency*3),-2)),' s'],...
+    [num2str(roundn(7/(frequency*4),-2)),' s'],...
+    [num2str(roundn(2/frequency,-2)),' s']});
+guidata(hObject,handles);
 
-% Hints: get(hObject,'String') returns contents of edit_amplitude as text
-%        str2double(get(hObject,'String')) returns contents of edit_amplitude as a double
-AxesHandle = handles.axes1;
-plot(AxesHandle,data_to_plot,'black');
 % Hints: get(hObject,'String') returns contents of edit_dutycycle as text
 %        str2double(get(hObject,'String')) returns contents of edit_dutycycle as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function edit_dutycycle_CreateFcn(hObject, eventdata, handles)
@@ -545,6 +610,16 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
+% --- Executes on button press in radiobutton_specified.
+function radiobutton_specified_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton_specified (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+contiflag=0;
+handles.contiflag=contiflag;
+guidata(hObject,handles);
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton_continuous
 
 % --- Executes on button press in radiobutton_continuous.
 function radiobutton_continuous_Callback(hObject, eventdata, handles)
@@ -556,13 +631,15 @@ handles.contiflag=contiflag;
 guidata(hObject,handles);
 % Hint: get(hObject,'Value') returns toggle state of radiobutton_continuous
 
-% --- Executes on button press in radiobutton_specified.
-function radiobutton_specified_Callback(hObject, eventdata, handles)
-% hObject    handle to radiobutton_specified (see GCBO)
+% --- Executes during object creation, after setting all properties.
+function text5_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to text5 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-contiflag=0;
-handles.contiflag=contiflag;
-guidata(hObject,handles);
-% Hint: get(hObject,'Value') returns toggle state of radiobutton_continuous
+% handles    empty - handles not created until after all CreateFcns called
 
+
+% --- Executes during object creation, after setting all properties.
+function figure1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
