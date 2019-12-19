@@ -36,11 +36,13 @@ channelCount = int32(1);
 ppp=handles.ppp;
 f=handles.frequency;
 period=1/(f*ppp);
-scaledWaveForm=handles.dataAO;
 
 periodcount=0;
 handles.periodcount=periodcount;
+t1=clock;
+handles.t1=t1;
 guidata(hObject,handles);
+
 
 % Declare the type of signal. If you want to specify the type of output 
 % signal, please change 'style' parameter in the GenerateWaveform function.
@@ -79,9 +81,8 @@ try
 
     % Output data
     scaleData = NET.createArray('System.Double', int32(64));
-    
     t = timer('TimerFcn',{@TimerCallback, instantAoCtrl, ...
-        ppp, scaleData, scaledWaveForm, channelStart, ...
+        ppp, scaleData, channelStart, ...
         channelCount,hObject}, 'period',period, 'executionmode', 'fixedrate', ...
         'StartDelay', 1);
     start(t);
@@ -92,6 +93,7 @@ try
 %     stop(t);
 %     delete(t); 
 %     end
+
 catch e
     % Something is wrong. 
     if BioFailed(errorCode)    
@@ -117,9 +119,29 @@ result =  errorCode < Automation.BDaq.ErrorCode.Success && ...
 end
 
 function TimerCallback(obj, event, instantAoCtrl, oneWavePointCount, ...
-    scaleData, scaledWaveForm, channelStart, channelCount, hObject)
+    scaleData,channelStart, channelCount, hObject)
 handles = guidata(hObject);
 
+t1=handles.t1;
+t2=clock;
+handles.t2=t2;
+realtime=etime(t2,t1);
+f=1/(realtime*oneWavePointCount);
+% handles.realtime=realtime;
+t1=clock;
+handles.t1=t1;
+
+persistent m;
+if isempty(m)
+    m=0;
+end
+m=m+1;
+if m==20
+set(handles.text12,'string',num2str(f));
+clear m;
+end
+
+scaledWaveForm=handles.dataAO;
 contiflag=handles.contiflag;
 periodNum=handles.periodNum;
 i=handles.i;

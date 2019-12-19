@@ -22,7 +22,7 @@ function varargout = UserDefinedFcn(varargin)
 
 % Edit the above text to modify the response to help UserDefinedFcn
 
-% Last Modified by GUIDE v2.5 21-Nov-2019 16:20:07
+% Last Modified by GUIDE v2.5 28-Nov-2019 15:31:06
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -53,21 +53,15 @@ function UserDefinedFcn_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   command line arguments to UserDefinedFcn (see VARARGIN)
 
 % Choose default command line output for UserDefinedFcn
+% handles = varargin;
 handles.output = hObject;
-
-handles.mouse_enable = 0;
-handles.mouse_num = 0;
-handles.mouse_p = zeros(1,2);
-
-set(handles.edit1,'Enable','off');
-set(handles.axes3,'Visible','off');
-
+handles.fatherfigure = varargin;
 
 % Update handles structure
 guidata(hObject, handles);
 
 % UIWAIT makes UserDefinedFcn wait for user response (see UIRESUME)
-% uiwait(handles.figure2);
+uiwait(handles.figure2);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -79,16 +73,15 @@ function varargout = UserDefinedFcn_OutputFcn(hObject, eventdata, handles)
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
-
+varargout{2} = handles;
+close();
 
 % --- Executes on button press in radiobutton_input.
 function radiobutton_input_Callback(hObject, eventdata, handles)
 % hObject    handle to radiobutton_input (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-set(handles.radiobutton2,'value',0);
-set(handles.edit1,'Enable','on');
-set(handles.axes3,'visible','off');
+
 % Hint: get(hObject,'Value') returns toggle state of radiobutton_input
 
 
@@ -129,8 +122,22 @@ else
     end
 end
 
+% display function graph.
+
+axeshandles = handles.axes3;
+x_min = str2double(get(handles.edit_xmin,'String'));
+x_max = str2double(get(handles.edit_xmax,'String'));
+pointpp = str2double(get(handles.edit5,'String'));
+
+y_vector = displaygraph(axeshandles,x_min,x_max,pointpp,fcn_calc);
+handles.y_vector = y_vector;
+guidata(hObject,handles);
+
+
+
+handles.dataAO = y_vector';
+handles.ppp = pointpp;
 handles.fcn_calc = fcn_calc;
-handles.fcn_latex = fcn_latex;
 guidata(hObject,handles);
 
 
@@ -169,9 +176,7 @@ function radiobutton2_Callback(hObject, eventdata, handles)
 % hObject    handle to radiobutton2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-set(handles.radiobutton_input,'value',0);
-set(handles.edit1,'Enable','off');
-set(handles.axes3,'Visible','on');
+
 % Hint: get(hObject,'Value') returns toggle state of radiobutton2
 
 
@@ -180,20 +185,7 @@ function axes3_ButtonDownFcn(hObject, eventdata, handles)
 % hObject    handle to axes3 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-mouse_enable = 1;
-mouse_num = 1;
 
-if mouse_enable
-    posi = get(handles.axes3,'CurrentPoint');
-    mouse_p(mouse_num,1) = posi(1);
-    mouse_p(mouse_num,2) = posi(3);
-end
-
-handles.mouse_enable = mouse_enable;
-handles.mouse_p = mouse_p;
-handles.mouse_num = mouse_num;
-
-guidata(hObject,handles);
 
 
 % --- Executes on mouse motion over figure - except title and menu.
@@ -201,23 +193,7 @@ function figure2_WindowButtonMotionFcn(hObject, eventdata, handles)
 % hObject    handle to figure2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-posi = get(handles.axes3,'CurrentPoint');
-mouse_num = handles.mouse_num + 1;
-mouse_p = handles.mouse_p;
 
-if handles.mouse_enable
-    
-    mouse_p(mouse_num,1) = posi(1);
-    mouse_p(mouse_num,2) = posi(3);
-    
-%     h1 = line(handles.axes3,x,y,'EraseMode','xor','LineWidth',1,'color','black');
-    
-end
-
-
-handles.mouse_p = mouse_p;
-handles.mouse_num = mouse_num;
-guidata(hObject,handles);
 
 
 % --- Executes on mouse press over figure background, over a disabled or
@@ -226,5 +202,169 @@ function figure2_WindowButtonUpFcn(hObject, eventdata, handles)
 % hObject    handle to figure2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.mouse_enable = 0;
+
+
+
+
+function edit_xmin_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_xmin (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles = guidata(hObject);
+axeshandles = handles.axes3;
+fcn_calc = handles.fcn_calc;
+x_min = str2double(get(handles.edit_xmin,'String'));
+x_max = str2double(get(handles.edit_xmax,'String'));
+pointpp = str2double(get(handles.edit5,'String'));
+
+y_vector = displaygraph(axeshandles,x_min,x_max,pointpp,fcn_calc);
+
+handles.dataAO = y_vector';
+handles.ppp = pointpp;
+handles.fcn_calc = fcn_calc;
 guidata(hObject,handles);
+guidata(hObject,handles);
+
+% Hints: get(hObject,'String') returns contents of edit_xmin as text
+%        str2double(get(hObject,'String')) returns contents of edit_xmin as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_xmin_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_xmin (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_xmax_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_xmax (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles = guidata(hObject);
+axeshandles = handles.axes3;
+fcn_calc = handles.fcn_calc;
+x_min = str2double(get(handles.edit_xmin,'String'));
+x_max = str2double(get(handles.edit_xmax,'String'));
+pointpp = str2double(get(handles.edit5,'String'));
+
+y_vector = displaygraph(axeshandles,x_min,x_max,pointpp,fcn_calc);
+
+handles.dataAO = y_vector';
+handles.ppp = pointpp;
+handles.fcn_calc = fcn_calc;
+guidata(hObject,handles);
+
+% Hints: get(hObject,'String') returns contents of edit_xmax as text
+%        str2double(get(hObject,'String')) returns contents of edit_xmax as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_xmax_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_xmax (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit5_Callback(hObject, eventdata, handles)
+% hObject    handle to edit5 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles = guidata(hObject);
+axeshandles = handles.axes3;
+fcn_calc = handles.fcn_calc;
+x_min = str2double(get(handles.edit_xmin,'String'));
+x_max = str2double(get(handles.edit_xmax,'String'));
+pointpp = str2double(get(handles.edit5,'String'));
+
+% maximum ppp is 100
+if pointpp > 100
+    set(handles.edit5,'String',100);
+    pointpp = 100;
+end
+
+y_vector = displaygraph(axeshandles,x_min,x_max,pointpp,fcn_calc);
+
+handles.dataAO = y_vector';
+handles.ppp = pointpp;
+handles.fcn_calc = fcn_calc;
+guidata(hObject,handles);
+
+
+% Hints: get(hObject,'String') returns contents of edit5 as text
+%        str2double(get(hObject,'String')) returns contents of edit5 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit5_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit5 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+% --- Executes on button press in pushbutton1.
+function pushbutton1_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+uiresume(handles.figure2);
+
+
+% --- Executes on button press in pushbutton2.
+function pushbutton2_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.dataAO = zeros(1);
+guidata(hObject,handles);
+uiresume(handles.figure2);
+
+
+
+function y_vector = displaygraph(axeshandles,x_min,x_max,pointpp,fcn_calc)
+cla(axeshandles);
+x_vector = linspace(x_min,x_max,pointpp);
+y_vector = fcn_calc(x_vector);
+
+flag = 0;
+for i = 1:pointpp % Range of output voltage is [0,5], truncate any output to it if needed.
+    if y_vector(i) > 5
+        y_vector(i) = 5;
+        flag = 1;
+    end
+    
+    if y_vector(i) < 0
+        y_vector(i) = 0;
+        flag = 1;
+    end
+end
+
+plot(axeshandles,x_vector,y_vector);
+set(axeshandles,'XLim',[x_min x_max]);
+if flag
+    % show user a warning
+    text(axeshandles,'String','Warning! Value not within the range [0,5] will not be displayed.',...
+        'Color','red', 'Position',[0 5.5],'FontSize',12);
+    set(axeshandles,'YLim',[0 5]); % 5 is the maximum output voltage.
+end
+
