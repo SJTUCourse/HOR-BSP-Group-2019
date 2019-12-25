@@ -54,13 +54,25 @@ function Integrate_HOR_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for Integrate_HOR
 handles.output = hObject;
-a1=imread('Oscilloscope1.jpg');
+
+% filepath operations
+filepath = mfilename('fullpath'); 
+[pathstr,~]=fileparts(filepath);
+cd(pathstr);  % set current matlab path to where .m file stores.
+addpath(genpath(pathstr)); % add all subfolders to search path.
+
+% initialization
+a1=imread([pathstr,'\source','\Oscilloscope1.jpg']);
 set(handles.pushbutton_p1,'cData',a1);
-b1=imread('SignalGenerator1.jpg');
+b1=imread([pathstr,'\source','\SignalGenerator1.jpg']);
 set(handles.pushbutton_p2,'cData',b1);
-c1=imread('DO_DI1.jpg');
+c1=imread([pathstr,'\source','\DO_DI1.jpg']);
 set(handles.pushbutton_p3,'cData',c1);
+
 % Update handles structure
+handles.pathstr = pathstr;
+
+
 guidata(hObject, handles);
 
 % UIWAIT makes Integrate_HOR wait for user response (see UIRESUME)
@@ -83,32 +95,38 @@ function pushbutton_p1_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_p1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-a2=imread('Oscilloscope2.jpg');
+a2=imread([handles.pathstr,'\source','\Oscilloscope2.jpg']);
 set(handles.pushbutton_p1,'cData',a2);
 pause(0.1);
-a1=imread('Oscilloscope1.jpg');
+a1=imread([handles.pathstr,'\source','\Oscilloscope1.jpg']);
 set(handles.pushbutton_p1,'cData',a1);
-Oscilloscope_Project1;
+
+Oscilloscope_Project4(handles.figure1);
+
 
 % --- Executes on button press in pushbutton_p2.
 function pushbutton_p2_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_p2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-b2=imread('SignalGenerator2.jpg');
+b2=imread([handles.pathstr,'\source','\SignalGenerator2.jpg']);
 set(handles.pushbutton_p2,'cData',b2);
 pause(0.1);
-b1=imread('SignalGenerator1.jpg');
+b1=imread([handles.pathstr,'\source','\SignalGenerator1.jpg']);
 set(handles.pushbutton_p2,'cData',b1);
+set(Integrate_HOR,'visible','off');
 
+SignalGenerator_Project4(handles.figure1);
 
 % --- Executes on button press in pushbutton_p3.
 function pushbutton_p3_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_p3 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-c2=imread('DO_DI2.jpg');
+c2=imread([handles.pathstr,'\source','\DO_DI2.jpg']);
 set(handles.pushbutton_p3,'cData',c2);
 pause(0.1);
-c1=imread('DO_DI1.jpg');
+c1=imread([handles.pathstr,'\source','\DO_DI1.jpg']);
 set(handles.pushbutton_p3,'cData',c1);
+set(Integrate_HOR,'visible','off');
+DO_DI_Project4(handles.figure1);

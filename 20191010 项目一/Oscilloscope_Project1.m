@@ -56,6 +56,10 @@ function Oscilloscope_Project1_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for Oscilloscope_Project1
 handles.output = hObject;
 
+% adjunct to main GUI 
+% main_figure_handles = varargin{1};
+% set(main_figure_handles,'visible','off');
+
 % initialize button& check box status.
 set(handles.radiobutton_fft,'value',0);
 set(handles.radiobutton_filter,'value',0);
@@ -109,6 +113,7 @@ ChannelSelect = [1,1,1,1];
 
 
 
+% handles.main_figure_handles = main_figure_handles;
 handles.y_high = y_high;
 handles.y_low = y_low;
 handles.timeaxesflag = timeaxesflag;
@@ -1220,3 +1225,4 @@ function axes5_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: place code in OpeningFcn to populate axes5
+end
